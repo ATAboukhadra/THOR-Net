@@ -1,0 +1,1 @@
+epoch	lr	loss_train	error_eval_p1	error_eval_p2	
