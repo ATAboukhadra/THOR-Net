@@ -104,8 +104,15 @@ def parse_args_function():
     parser.add_argument(
         "--num_features",
         type=int,
-        default = 2048,
+        default=2048,
         help="Number of features passed to coarse-to-fine network"
+    )
+
+    parser.add_argument(
+        "--hid_size", 
+        type=int, 
+        default=128,
+        help="hidden layer size in graformer"
     )
 
     parser.add_argument(
@@ -128,6 +135,40 @@ def parse_args_function():
         action='store_true',
         help="Generate textured mesh using photometric loss"
     )
+
+    # For Testing
+    parser.add_argument(
+        "--seq", 
+        default='MPM13', 
+        help="Sequence Name"
+    )
+
+    parser.add_argument(
+        "--checkpoint_folder", 
+        default='ho',
+        help="the folder of the pretrained model"
+    )
+
+    parser.add_argument(
+        "--checkpoint_id", 
+        type=int, 
+        required=True, 
+        help="the id of the pretrained model"
+    )
+
+    parser.add_argument(
+        "--visualize", 
+        action='store_true', 
+        help="Visualize results?"
+    )
+
+    parser.add_argument(
+        "--split",
+        default='test', 
+        help="Which subset to evaluate on"
+    )
+
+
 
     args = parser.parse_args()
     return args

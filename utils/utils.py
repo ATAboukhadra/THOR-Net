@@ -72,35 +72,75 @@ def mpjpe(predicted, target):
     assert predicted.shape == target.shape
     return torch.mean(torch.norm(predicted - target, dim=len(target.shape) - 1))
 
-def save_calculate_error(path, predictions, labels, split, errors, output_dicts, c, supporting_dicts=None, rgb_errors=None, img=None):
+def save_calculate_error(predictions, labels, path, errors, output_dicts, c, num_classes=2, dataset_name='h2o', obj=True, generate_mesh=False):
     """Stores the results of the model in a dict and calculates error in case of available gt"""
 
-    
     predicted_labels = list(predictions['labels'])
 
-    if 1 in predicted_labels:
-        idx = predicted_labels.index(1) 
-        keypoints = predictions['keypoints3d'][idx][:21]
-        mesh = predictions['mesh3d'][idx]
-        if split != 'test':
-            mesh_gt = labels['mesh3d'][0][:778]
-            error = mpjpe(torch.Tensor(mesh[:778, :3]), torch.Tensor(mesh_gt))
-            errors.append(error)
-            rgb_error = calculate_rgb_error(img, labels['mesh3d'][0], mesh[:, 3:])
-            rgb_errors.append(rgb_error)
+    rhi, obji = 0, 21
+    rhvi, objvi = 0, 778
 
+    if dataset_name == 'h2o':
+        rhi, obji = 21, 42
+        rhvi, objvi = 778, 778*2
+
+    if (num_classes > 2 and set([1, 2, 3]).issubset(predicted_labels)) or (num_classes == 2 and 1 in predicted_labels):
+        
+        keypoints = predictions['keypoints3d'][0]
+        keypoints_gt = labels['keypoints3d'][0]
+        
+        if generate_mesh:
+            mesh = predictions['mesh3d'][0][:, :3]
+            mesh_gt = labels['mesh3d'][0]
+        else:
+            mesh = np.zeros((2556, 3))
+            mesh_gt = np.zeros((2556, 3))
+
+        rh_pose, rh_pose_gt = keypoints[rhi:rhi+21], keypoints_gt[rhi:rhi+21]
+        rh_mesh, rh_mesh_gt = mesh[rhvi:rhvi+778], mesh_gt[rhvi:rhvi+778]
+
+        if obj:
+            obj_pose, obj_pose_gt = keypoints[obji:], keypoints_gt[obji:]
+            obj_mesh, obj_mesh_gt = mesh[objvi:], mesh_gt[objvi:]
+        else:
+            obj_pose, obj_pose_gt = np.zeros((8, 3)), np.zeros((8, 3))
+            obj_mesh, obj_mesh_gt = np.zeros((1000, 3)), np.zeros((1000, 3))
+            
+
+        if dataset_name == 'h2o':
+            lh_pose, lh_pose_gt = keypoints[:21], keypoints_gt[:21]
+            lh_mesh, lh_mesh_gt = mesh[:778], mesh_gt[:778]
+        else:
+            lh_pose, lh_pose_gt = np.zeros((21, 3)), np.zeros((21, 3))
+            lh_mesh, lh_mesh_gt = np.zeros((778, 3)), np.zeros((778, 3))
+
+        pair_list = [
+            (lh_pose, lh_pose_gt),
+            (lh_mesh, lh_mesh_gt),
+            (rh_pose, rh_pose_gt),
+            (rh_mesh, rh_mesh_gt),
+            (obj_pose, obj_pose_gt),
+            (obj_mesh, obj_mesh_gt)
+        ]
+
+        for i in range(len(pair_list)):
+
+            error = mpjpe(torch.Tensor(pair_list[i][0]), torch.Tensor(pair_list[i][1]))
+            errors[i].append(error)
+
+        error = mpjpe(torch.Tensor(mesh), torch.Tensor(mesh_gt))
     else:
         c += 1
-        if supporting_dicts is not None:
-            keypoints = supporting_dicts[0][path]
-            mesh = supporting_dicts[1][path]
-        else:
-            keypoints = np.zeros((21, 3))
-            mesh = np.zeros((778, 3))
+        error = 1000
+        keypoints = np.zeros((50, 3))
+        mesh = np.zeros((2556, 3))
         print(c)
-        
+      
     output_dicts[0][path] = keypoints
-    output_dicts[1][path] = mesh[:, :3]
+    output_dicts[1][path] = mesh   
+
+    # Object pose
+    # output_dicts[1][path] = keypoints_gt[42:]
 
     return c
 
@@ -119,13 +159,16 @@ def save_dicts(output_dicts, split):
 def prepare_data_for_evaluation(data_dict, outputs, img, keys, device, split):
     """Postprocessing function"""
 
-    targets = [{k: v.to(device) for k, v in t[0].items() if k in keys} for t in data_dict]
+    # print(data_dict[0])
+    targets = [{k: v.to(device) for k, v in t.items() if k in keys} for t in data_dict]
 
     labels = {k: v.cpu().detach().numpy() for k, v in targets[0].items()}
     predictions = {k: v.cpu().detach().numpy() for k, v in outputs[0].items()}
 
+    palm = None
+    if 'palm' in labels.keys():
+        palm = labels['palm'][0]
 
-    palm = labels['palm'][0]
     if split == 'test':
         labels = None
 

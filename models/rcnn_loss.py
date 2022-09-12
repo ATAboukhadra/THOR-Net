@@ -139,7 +139,7 @@ def heatmaps_to_keypoints(maps, rois):
 def keypointrcnn_loss(keypoint_logits, proposals, gt_keypoints, keypoint_matched_idxs, 
                     keypoint3d_pred=None, keypoint3d_gt=None, mesh3d_pred=None, 
                     mesh3d_gt=None, original_images=None, palms_gt=None,
-                    photometric=False, num_classes=4):
+                    photometric=False, num_classes=4, dataset_name='h2o'):
 
     N, K, H, W = keypoint_logits.shape
     assert H == W
@@ -174,11 +174,15 @@ def keypointrcnn_loss(keypoint_logits, proposals, gt_keypoints, keypoint_matched
         if num_classes == 2:
             kp3d = gt_kp3d_in_image[midx]
             mesh3d = gt_mesh3d_in_image[midx]
+
             kps3d.append(kp3d.view(-1))
             meshes3d.append(mesh3d.view(-1))
             images.extend([image] * num_regions)
+
         else:
             images.append(image)
+        
+
         
     keypoint_targets = torch.cat(heatmaps, dim=0)
     valid = torch.cat(valid, dim=0).to(dtype=torch.uint8)    
@@ -199,9 +203,7 @@ def keypointrcnn_loss(keypoint_logits, proposals, gt_keypoints, keypoint_matched
     if num_classes > 2:
         keypoint3d_targets = torch.cat(keypoint3d_gt, dim=0)
         mesh3d_targets = torch.cat(mesh3d_gt, dim=0) 
-
     else:
-        palms = torch.cat(palms, dim=0).view(N, 1, 3) # TODO: add another condition for this
         keypoint3d_targets = torch.cat(kps3d, dim=0).view(N, K, 3)
         mesh3d_targets = torch.cat(meshes3d, dim=0)
 
@@ -225,9 +227,14 @@ def keypointrcnn_loss(keypoint_logits, proposals, gt_keypoints, keypoint_matched
     if photometric:
         pred_rgb = xyz_rgb_pred[:, :, 3:]
         pts3D = mesh3d_targets
+
+        if len(palms) > 0:
+            palms = torch.cat(palms, dim=0).view(N, 1, 3)#.repeat(1, K, 1)
+        else:
+            palms=None
         # pts3D = xyz_rgb_pred[:, :, :3]
         images = torch.stack(images)
-        photometric_loss = calculate_photometric_loss(pts3D, pred_rgb, images, N, K)
+        photometric_loss = calculate_photometric_loss(pts3D, pred_rgb, images, N, K, dataset_name=dataset_name, centers=palms)
     else:
         photometric_loss = None
     # mesh3d_loss_smooth = calculate_smoothing_loss(mesh3d_pred[:K], K)
@@ -327,21 +334,19 @@ def filter_rois(keypoint_proposals, training, labels=None):
 
     return new_keypoint_proposals
 
-def project_3D_points(pts3D):
+def project_3D_points(pts3D, dataset_name):
 
-    # H2O matrix
-
-    cam_mat = torch.Tensor(
-        [[636.6593, 0       , 635.2839],
-        [0        , 636.2520, 366.8740],
-        [0        , 0       , 1]]).to(pts3D.device)
+    if dataset_name == 'h2o':        
+        cam_mat = torch.Tensor(
+            [[636.6593, 0       , 635.2839],
+            [0        , 636.2520, 366.8740],
+            [0        , 0       , 1]]).to(pts3D.device)
     
-    # HO3D matrix
-
-    # cam_mat = torch.Tensor(
-    #     [[617.343,0,      312.42],
-    #     [0,       617.343,241.42],
-    #     [0,       0,       1]]).to(pts3D.device)
+    else:
+        cam_mat = torch.Tensor(
+            [[617.343,0,      312.42],
+            [0,       617.343,241.42],
+            [0,       0,       1]]).to(pts3D.device)
 
     K = pts3D.shape[0]
     pts2D = torch.zeros((K, 2)).to(torch.long)
@@ -351,14 +356,14 @@ def project_3D_points(pts3D):
         pts2D = torch.stack([proj_pts[:,0] / proj_pts[:,2], proj_pts[:,1] / proj_pts[:,2]], axis=1).to(torch.long)
     return pts2D
 
-def calculate_photometric_loss(pts3D, rgb, images, N, K, centers=None):
+def calculate_photometric_loss(pts3D, rgb, images, N, K, dataset_name='h2o', centers=None):
 
     if centers is not None:
         pts3D = pts3D + centers
     
     pts3D = pts3D.reshape((N * K, 3))
 
-    pts2D = project_3D_points(pts3D)
+    pts2D = project_3D_points(pts3D, dataset_name)
     pts2D = pts2D.view(N, K, 2)
     B, H, W, _ = images.shape
 
