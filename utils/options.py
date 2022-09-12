@@ -152,7 +152,7 @@ def parse_args_function():
     parser.add_argument(
         "--checkpoint_id", 
         type=int, 
-        required=True, 
+        default=1,
         help="the id of the pretrained model"
     )
 
