@@ -320,6 +320,7 @@ class RoIHeads(nn.Module):
 
             # Apply the same operation but only the last RoIs which are the GT RoIs to train the GraFormers
             # TODO: extend the filter operation to create multiple 3-roi samples
+            batch=0
             if self.num_classes > 2:
                 filtered_keypoint_proposals = filter_rois(keypoint_proposals, self.training, labels)
             else:
@@ -389,7 +390,7 @@ class RoIHeads(nn.Module):
                                                                             pos_matched_idxs, keypoint3d, keypoints3d_gt, 
                                                                             mesh3d, mesh3d_gt, original_images=original_imgs, 
                                                                             palms_gt=palms_gt, num_classes=self.num_classes,
-                                                                            photometric=self.photometric)
+                                                                            photometric=self.photometric, dataset_name=self.dataset_name)
 
                 loss_keypoint = {
                     "loss_keypoint": rcnn_loss_keypoint,

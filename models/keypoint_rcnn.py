@@ -170,9 +170,9 @@ class KeypointRCNN(FasterRCNN):
                  box_batch_size_per_image=512, box_positive_fraction=0.25,
                  bbox_reg_weights=None,
                  # keypoint parameters
-                 keypoint_roi_pool=None, keypoint_head=None, keypoint_predictor=None,
-                 num_kps2d=21, num_kps3d=50, num_verts=2556, photometric=False,
-                 graph_input='heatmaps', num_features=2048, device='cpu'):
+                 keypoint_roi_pool=None, keypoint_head=None, keypoint_predictor=None, 
+                 num_kps2d=21, num_kps3d=50, num_verts=2556, photometric=False, hid_size=128,
+                 graph_input='heatmaps', num_features=2048, device='cpu', dataset_name='h2o'):
 
         assert isinstance(keypoint_roi_pool, (MultiScaleRoIAlign, type(None)))
         if min_size is None:
@@ -206,7 +206,7 @@ class KeypointRCNN(FasterRCNN):
         
         edges = create_edges(num_nodes=num_kps3d)
         adj = adj_mx_from_edges(num_pts=num_kps3d, edges=edges, sparse=False)            
-        keypoint_graformer = GraFormer(adj=adj.to(device), hid_dim=128, coords_dim=(input_size, 3), 
+        keypoint_graformer = GraFormer(adj=adj.to(device), hid_dim=hid_size, coords_dim=(input_size, 3), 
                                         n_pts=num_kps3d, num_layers=5, n_head=4, dropout=0.25)
         
         # Coarse-to-fine GraFormer
@@ -256,6 +256,7 @@ class KeypointRCNN(FasterRCNN):
         self.roi_heads.num_classes = num_classes
         self.roi_heads.num_features = num_features
         self.roi_heads.photometric = photometric
+        self.roi_heads.dataset_name = dataset_name
         
 
 class KeypointRCNNHeads(nn.Sequential):
