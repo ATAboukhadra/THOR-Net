@@ -15,7 +15,7 @@ __all__ = [
 ]
 
 
-class KeypointRCNN(FasterRCNN):
+class THOR(FasterRCNN):
     """
     Implements Keypoint R-CNN.
 
@@ -220,7 +220,7 @@ class KeypointRCNN(FasterRCNN):
             mesh_graformer = MeshGraFormer(initial_adj=adj.to(device), hid_dim=num_features // 4, coords_dim=(input_size, output_size), 
                             num_kps3d=num_kps3d, num_verts=num_verts, dropout=0.25)
 
-        super(KeypointRCNN, self).__init__(
+        super(THOR, self).__init__(
             backbone, num_classes,
             # transform parameters
             min_size, max_size,
@@ -316,7 +316,7 @@ model_urls = {
 }
 
 
-def keypointrcnn_resnet50_fpn(pretrained=False, progress=True,
+def create_thor(pretrained=False, progress=True,
                               num_classes=2, num_kps2d=17,
                               pretrained_backbone=True, trainable_backbone_layers=None, **kwargs):
     """
@@ -383,5 +383,5 @@ def keypointrcnn_resnet50_fpn(pretrained=False, progress=True,
 
     # backbone = mobilenet_backbone("mobilenet_v3_large", pretrained_backbone, True, trainable_layers=trainable_backbone_layers)
     backbone = resnet_fpn_backbone('resnet50', pretrained_backbone, trainable_layers=trainable_backbone_layers)
-    model = KeypointRCNN(backbone, num_classes, num_kps2d=num_kps2d, **kwargs)
+    model = THOR(backbone, num_classes, num_kps2d=num_kps2d, **kwargs)
     return model
