@@ -1,6 +1,6 @@
-# KeypointRCNN-GraFormer
+# THOR-Net
 
-This repo contains the PyTorch implementation for Hand object pose and shape estimation using Keypoint RCNN and GraFormer.
+This repo contains the PyTorch implementation for Two-Hands-Object reconstruction network (THOR-Net).
 
 ## Dependencies
 
@@ -20,7 +20,7 @@ tqdm==4.62.3
 ```
 
 ## Step 1: Create dataset files
-datasets/make_data.py creates the dataset files by splitting a train-val-test splits and preprocess them to problem needs. 
+datasets/make_data.py creates the dataset files for HO3D by creating train-val-test splits and preprocess them to problem needs. 
 
 Adapt the variables (root and mano_root) to the HO3D dataset path (downloadable through [HO3D](https://www.tugraz.at/index.php?id=40231)) and mano models path (downloadable through [MANO](https://mano.is.tue.mpg.de/)) 
 
@@ -39,12 +39,12 @@ For more detailed description of different parameters check utils/options.py
 
 ```
 mkdir checkpoints/hand-object
-chmod a+x ./scripts/run_train_rcnn.sh
-./scripts/run_train_rcnn.sh
+chmod a+x ./scripts/train_ho3d.sh
+./scripts/train_ho3d.sh
 ```
 
 ## Step 3: Evaluate and Visualize model
-The script (scripts/visualize_rcnn.sh) produces visualizations for the outputs of a pretrained specified model on a --split which could be train or val or test.
+The script (scripts/test_ho3d.sh) produces visualizations for the outputs of a pretrained specified model on a --split which could be train or val or test.
 
 The pretrained model is located at --checkpoint_folder and has --checkpoint_id which corresponds to the epoch number.
 
