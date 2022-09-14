@@ -52,5 +52,5 @@ The pretrained model is located at --checkpoint_folder and has --checkpoint_id w
 To disable the visualization and run inference only (with evaluation if GT exists in case of a train or val split) remove --visualization flag from the script.
 
 ```
-./scripts/visualize_rcnn.sh
+./scripts/test_ho3d.sh
 ```
