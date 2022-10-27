@@ -1,6 +1,6 @@
 # THOR-Net
 
-This repo contains the PyTorch implementation for Two-Hands-Object reconstruction network (THOR-Net).
+This repo contains the PyTorch implementation for Two-Hands-Object reconstruction network (THOR-Net). We used code from: 
 
 ## Dependencies
 
@@ -54,3 +54,13 @@ To disable the visualization and run inference only (with evaluation if GT exist
 ```
 ./scripts/test_ho3d.sh
 ```
+
+## Acknowledgements
+
+Our implementation is built on top of multiple open-source projects. We would like to thank all the researchers who provided their code publicly:
+
+- [GraFormer](https://github.com/Graformer/GraFormer)
+- [HOPE](https://github.com/bardiadoosti/HOPE)
+- [torchvision RCNN](https://pytorch.org/vision/main/models/generated/torchvision.models.detection.keypointrcnn_resnet50_fpn.html#torchvision.models.detection.keypointrcnn_resnet50_fpn)
+- [HO-3D](https://github.com/shreyashampali/ho3d)
+
