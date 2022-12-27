@@ -1,6 +1,6 @@
 # THOR-Net
 
-This repo contains the PyTorch implementation for Two-Hands-Object reconstruction network (THOR-Net).
+This repo contains the PyTorch implementation for **THOR-Net: End-to-end Graformer-based Realistic Two Hands and Object Reconstruction with Self-supervision** published in WACV 2023 [ArXiv pre-print](https://arxiv.org/abs/2210.13853).
 
 ## Dependencies
 
@@ -48,9 +48,29 @@ The script (scripts/test_ho3d.sh) produces visualizations for the outputs of a p
 
 The pretrained model is located at --checkpoint_folder and has --checkpoint_id which corresponds to the epoch number.
 
+We are providing pretrained weights for models that were trained on datasets of hand and object interactions, so that users can test and see the results of the model without having to train from scratch:
+
+1. 1 hand and 1 object with texture (trained on HO-3D) [HO-3D-checkpoint](https://cloud.dfki.de/owncloud/index.php/s/CZtPMQjqJMEg52q)
+2. 2 Hands and 1 object with texture (trained on H2O) [H2O-checkpoint](https://cloud.dfki.de/owncloud/index.php/s/NkjaqqRsPpMRF8s)
 
 To disable the visualization and run inference only (with evaluation if GT exists in case of a train or val split) remove --visualization flag from the script.
 
 ```
 ./scripts/test_ho3d.sh
 ```
+
+Similarly you can evaluate the H2O model using
+
+```
+./scripts/test_h2o.sh
+```
+
+## Acknowledgements
+
+Our implementation is built on top of multiple open-source projects. We would like to thank all the researchers who provided their code publicly:
+
+- [GraFormer](https://github.com/Graformer/GraFormer)
+- [HOPE](https://github.com/bardiadoosti/HOPE)
+- [torchvision RCNN](https://pytorch.org/vision/main/models/generated/torchvision.models.detection.keypointrcnn_resnet50_fpn.html#torchvision.models.detection.keypointrcnn_resnet50_fpn)
+- [HO-3D](https://github.com/shreyashampali/ho3d)
+
