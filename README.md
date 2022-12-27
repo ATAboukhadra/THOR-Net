@@ -59,7 +59,11 @@ To disable the visualization and run inference only (with evaluation if GT exist
 ./scripts/test_ho3d.sh
 ```
 
-Similarly you can evaluate
+Similarly you can evaluate the H2O model using
+
+```
+./scripts/test_h2o.sh
+```
 
 ## Acknowledgements
 
