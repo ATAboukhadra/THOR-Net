@@ -76,3 +76,16 @@ Our implementation is built on top of multiple open-source projects. We would li
 - [torchvision RCNN](https://pytorch.org/vision/main/models/generated/torchvision.models.detection.keypointrcnn_resnet50_fpn.html#torchvision.models.detection.keypointrcnn_resnet50_fpn)
 - [HO-3D](https://github.com/shreyashampali/ho3d)
 
+
+## Citation 
+
+```
+@InProceedings{Aboukhadra_2023_WACV,
+    author    = {Aboukhadra, Ahmed Tawfik and Malik, Jameel and Elhayek, Ahmed and Robertini, Nadia and Stricker, Didier},
+    title     = {THOR-Net: End-to-End Graformer-Based Realistic Two Hands and Object Reconstruction With Self-Supervision},
+    booktitle = {Proceedings of the IEEE/CVF Winter Conference on Applications of Computer Vision (WACV)},
+    month     = {January},
+    year      = {2023},
+    pages     = {1001-1010}
+}
+```
