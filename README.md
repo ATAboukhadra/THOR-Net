@@ -1,6 +1,6 @@
 # THOR-Net
 
-This repo contains the PyTorch implementation for **THOR-Net: End-to-end Graformer-based Realistic Two Hands and Object Reconstruction with Self-supervision** published in WACV 2023 [ArXiv pre-print](https://arxiv.org/abs/2210.13853).
+This repo contains the PyTorch implementation for **THOR-Net: End-to-end Graformer-based Realistic Two Hands and Object Reconstruction with Self-supervision** published in WACV 2023 [Paper](https://openaccess.thecvf.com/content/WACV2023/html/Aboukhadra_THOR-Net_End-to-End_Graformer-Based_Realistic_Two_Hands_and_Object_Reconstruction_With_WACV_2023_paper.html)
 
 ![This is an image](teaser.png)
 
