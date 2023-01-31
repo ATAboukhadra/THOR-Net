@@ -100,6 +100,8 @@ for epoch in range(start, args.num_iterations):  # loop over the dataset multipl
     running_loss3d = 0.0
     running_mesh_loss3d = 0.0
     running_photometric_loss = 0.0
+    running_nimble_loss = 0.0
+
     
     if 'h2o' in args.dataset_name.lower():
         h2o_info = (train_input_tar_lists, train_annotation_tar_files, annotation_components, args.buffer_size, my_preprocessor)
@@ -130,17 +132,20 @@ for epoch in range(start, args.num_iterations):  # loop over the dataset multipl
         running_loss2d += loss_dict['loss_keypoint'].data
         running_loss3d += loss_dict['loss_keypoint3d'].data
         running_mesh_loss3d += loss_dict['loss_mesh3d'].data
+        running_nimble_loss += loss_dict['loss_nimble'].data
+        
         if 'loss_photometric' in loss_dict.keys():
             running_photometric_loss += loss_dict['loss_photometric'].data
 
         if (i+1) % args.log_batch == 0:    # print every log_iter mini-batches
-            logging.info('[%d, %5d] loss 2d: %.4f, loss 3d: %.4f, mesh loss 3d:%.4f, photometric loss: %.4f' % 
+            logging.info('[%d, %5d] loss 2d: %.4f, loss 3d: %.4f, mesh loss 3d:%.4f, photometric loss: %.4f, nimble loss: %.4f' % 
             (epoch + 1, i + 1, running_loss2d / args.log_batch, running_loss3d / args.log_batch, 
-            running_mesh_loss3d / args.log_batch, running_photometric_loss / args.log_batch))
+            running_mesh_loss3d / args.log_batch, running_photometric_loss / args.log_batch, running_nimble_loss / args.log_batch))
             running_mesh_loss3d = 0.0
             running_loss2d = 0.0
             running_loss3d = 0.0
             running_photometric_loss = 0.0
+            running_nimble_loss = 0.0
 
     losses.append((train_loss2d / (i+1)).cpu().numpy())
     

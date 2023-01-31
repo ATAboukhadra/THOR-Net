@@ -8,6 +8,7 @@ from torchvision.models.detection import _utils as det_utils
 from typing import Optional, List, Dict, Tuple
 from .rcnn_loss import *
 
+
 class RoIHeads(nn.Module):
     __annotations__ = {
         'box_coder': det_utils.BoxCoder,
@@ -368,7 +369,9 @@ class RoIHeads(nn.Module):
                 # Pass features and pose to Coarse-to-fine GraFormer
                 mesh_graformer_inputs = torch.cat((graformer_inputs, graformer_features), axis=2)
                 mesh3d = self.mesh_graformer(mesh_graformer_inputs)
-            
+                hand_mesh = mesh3d[:, :778, :3]
+                nimble_mesh, nimble_texture = self.mano_nimble(hand_mesh)
+
             loss_keypoint = {}
             
             if self.training:
@@ -385,12 +388,13 @@ class RoIHeads(nn.Module):
                 else:
                     palms_gt = None
 
-                rcnn_loss_keypoint, rcnn_loss_keypoint3d, rcnn_loss_mesh3d, rcnn_loss_photometric = keypointrcnn_loss(
+                rcnn_loss_keypoint, rcnn_loss_keypoint3d, rcnn_loss_mesh3d, rcnn_loss_photometric, nimble_loss = keypointrcnn_loss(
                                                                             keypoint_logits, keypoint_proposals, gt_keypoints, 
                                                                             pos_matched_idxs, keypoint3d, keypoints3d_gt, 
                                                                             mesh3d, mesh3d_gt, original_images=original_imgs, 
                                                                             palms_gt=palms_gt, num_classes=self.num_classes,
-                                                                            photometric=self.photometric, dataset_name=self.dataset_name)
+                                                                            photometric=self.photometric, dataset_name=self.dataset_name,
+                                                                            nimble_mesh=nimble_mesh)
 
                 loss_keypoint = {
                     "loss_keypoint": rcnn_loss_keypoint,
@@ -399,6 +403,7 @@ class RoIHeads(nn.Module):
                 
                 if self.num_verts > 0:
                     loss_keypoint['loss_mesh3d'] = rcnn_loss_mesh3d
+                    loss_keypoint['loss_nimble'] = nimble_loss
                 if rcnn_loss_photometric is not None:
                     loss_keypoint['loss_photometric'] = rcnn_loss_photometric
 

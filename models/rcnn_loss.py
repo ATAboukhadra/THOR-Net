@@ -4,6 +4,7 @@ import os
 from torchvision.ops import roi_align
 from typing import Optional, List, Dict, Tuple
 from torch import nn, Tensor
+from pytorch3d.loss.chamfer import chamfer_distance
 
 # from pytorch3d.loss import (
 #     mesh_edge_loss, 
@@ -139,7 +140,7 @@ def heatmaps_to_keypoints(maps, rois):
 def keypointrcnn_loss(keypoint_logits, proposals, gt_keypoints, keypoint_matched_idxs, 
                     keypoint3d_pred=None, keypoint3d_gt=None, mesh3d_pred=None, 
                     mesh3d_gt=None, original_images=None, palms_gt=None,
-                    photometric=False, num_classes=4, dataset_name='h2o'):
+                    photometric=False, num_classes=4, dataset_name='h2o', nimble_mesh=None):
 
     N, K, H, W = keypoint_logits.shape
     assert H == W
@@ -211,17 +212,18 @@ def keypointrcnn_loss(keypoint_logits, proposals, gt_keypoints, keypoint_matched
     keypoint3d_pred = keypoint3d_pred.view(N * K, 3)
     keypoint3d_targets = keypoint3d_targets.view(N * K, 3)
     keypoint3d_loss = F.mse_loss(keypoint3d_pred, keypoint3d_targets) / 1000
-    
+
     # 3D shape Loss
     N, K, D = mesh3d_pred[:, :, :3].shape
     xyz_rgb_pred = torch.clone(mesh3d_pred)
     mesh3d_pred = torch.reshape(mesh3d_pred[:, :, :3], (N * K, D)) 
     mesh3d_targets = torch.reshape(mesh3d_targets, (N * K, D))
     mesh3d_loss = F.mse_loss(mesh3d_pred, mesh3d_targets) / 1000
-
+    
     # Photometric Loss
     # To penalize rgb values with the projection of the GT shape, replace predicted xyz with GT xyz
     mesh3d_targets = torch.reshape(mesh3d_targets, (N, K, D))    
+    nimble_loss = chamfer_distance(nimble_mesh, mesh3d_targets)[0] / 1e4
     
     # Calculate photometric loss
     if photometric:
@@ -243,7 +245,7 @@ def keypointrcnn_loss(keypoint_logits, proposals, gt_keypoints, keypoint_matched
     # mesh3d_loss += mesh3d_loss_smooth
     
     # Print the losses
-    return keypoint_loss, keypoint3d_loss, mesh3d_loss, photometric_loss
+    return keypoint_loss, keypoint3d_loss, mesh3d_loss, photometric_loss, nimble_loss
 
 def keypointrcnn_inference(x, boxes):
     # type: (Tensor, List[Tensor]) -> Tuple[List[Tensor], List[Tensor]]

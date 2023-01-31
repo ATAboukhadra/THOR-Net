@@ -10,6 +10,9 @@ from GraFormer.network.MeshGraFormer import MeshGraFormer
 
 from GraFormer.common.data_utils import create_edges
 
+from models.mano_nimble import ManoNimbleAE
+from utils.utils import freeze_component
+
 __all__ = [
     "KeypointRCNN", "keypointrcnn_resnet50_fpn"
 ]
@@ -220,6 +223,8 @@ class THOR(FasterRCNN):
             mesh_graformer = MeshGraFormer(initial_adj=adj.to(device), hid_dim=num_features // 4, coords_dim=(input_size, output_size), 
                             num_kps3d=num_kps3d, num_verts=num_verts, dropout=0.25)
 
+
+
         super(THOR, self).__init__(
             backbone, num_classes,
             # transform parameters
@@ -258,6 +263,7 @@ class THOR(FasterRCNN):
         self.roi_heads.photometric = photometric
         self.roi_heads.dataset_name = dataset_name
         
+        self.roi_heads.mano_nimble = ManoNimbleAE(device)
 
 class KeypointRCNNHeads(nn.Sequential):
     def __init__(self, in_channels, layers):
@@ -384,4 +390,5 @@ def create_thor(pretrained=False, progress=True,
     # backbone = mobilenet_backbone("mobilenet_v3_large", pretrained_backbone, True, trainable_layers=trainable_backbone_layers)
     backbone = resnet_fpn_backbone('resnet50', pretrained_backbone, trainable_layers=trainable_backbone_layers)
     model = THOR(backbone, num_classes, num_kps2d=num_kps2d, **kwargs)
+    freeze_component(model.roi_heads.mano_nimble)
     return model
