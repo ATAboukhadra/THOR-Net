@@ -8,7 +8,7 @@ python3.8 test_THOR.py \
  --split val \
  --seq rgb \
  --gpu_number 1 \
- --batch_size 1 \
+ --batch_size 2 \
  --object \
  --photometric \
  --buffer_size 10 \
