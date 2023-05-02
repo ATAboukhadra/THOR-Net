@@ -668,6 +668,9 @@ def save_mesh(outputs, filename, right_hand_faces, obj_faces, idx=0, texture=Non
     else:
         texture = None
 
+    texture = np.zeros((num_verts, 3))
+    texture[:, 0] = 1
+    
     # Disable object texture
     # texture[-1000:, :] = 0.5
     
@@ -683,7 +686,6 @@ def save_mesh(outputs, filename, right_hand_faces, obj_faces, idx=0, texture=Non
 
 def write_obj(verts, faces, filename, texture=None):
     """Saves and obj file using vertices and faces"""
-    texture=None
     if texture is not None:
         alpha = np.ones((verts.shape[0], 1))
         v_color_matrix = np.append(texture, alpha, axis=1)

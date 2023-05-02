@@ -157,13 +157,12 @@ for i, ts_data in tqdm(enumerate(testloader)):
         
     data_dict = ts_data
     path = data_dict[0]['path'].split('/')[-1]
-    if args.seq not in data_dict[0]['path']: # or frame_num < 1000 or frame_num > 1020:# or '5' not in path: #frame_num != 547:
+    if args.seq not in data_dict[0]['path']:
         continue
     if '_' in path:
         path = path.split('_')[-1]
     frame_num = int(path.split('.')[0])
-
-
+    
     ### Run inference
     inputs = [t['inputs'].to(device) for t in data_dict]
     outputs = model(inputs)
