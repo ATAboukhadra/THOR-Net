@@ -5,7 +5,6 @@ import torchvision.transforms as transforms
 
 from .h2o_utils.h2o_datapipe_pt_1_12 import create_datapipe
 from .dataset import Dataset
-from torch.utils.data.dataloader_experimental import DataLoader2
     
 
 def ho3d_collate_fn(batch):
@@ -38,7 +37,8 @@ def create_loader(dataset_name, root, split, batch_size, num_kps3d=21, num_verts
         input_tar_lists, annotation_tar_files, annotation_components, shuffle_buffer_size, my_preprocessor = h2o_info
         datapipe = create_datapipe(input_tar_lists, annotation_tar_files, annotation_components, shuffle_buffer_size)
         datapipe = datapipe.map(fn=my_preprocessor)
-        loader = DataLoader2(datapipe, batch_size=batch_size, num_workers=8, collate_fn=h2o_collate_fn, pin_memory=True, parallelism_mode='mp')
+        loader = torch.utils.data.DataLoader(datapipe, batch_size=batch_size, num_workers=8, shuffle=True)
+
     else:
         dataset = Dataset(root=root, load_set=split, transform=transform, num_kps3d=num_kps3d, num_verts=num_verts)
         loader = torch.utils.data.DataLoader(dataset, batch_size=batch_size, shuffle=True, num_workers=8, collate_fn=ho3d_collate_fn)    

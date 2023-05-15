@@ -89,6 +89,8 @@ transform_function = transforms.Compose([transforms.ToTensor()])
 
 num_kps2d, num_kps3d, num_verts = calculate_keypoints(args.dataset_name, args.object)
 
+# Create Output directory
+
 # Dataloader
 
 if args.dataset_name == 'h2o':
@@ -101,7 +103,7 @@ if args.dataset_name == 'h2o':
     input_tar_lists, annotation_tar_files = load_tar_split(h2o_data_dir, args.split)   
     datapipe = create_datapipe(input_tar_lists, annotation_tar_files, annotation_components, args.buffer_size)
     datapipe = datapipe.map(fn=my_preprocessor)
-    testloader = DataLoader2(datapipe, batch_size=args.batch_size, num_workers=8, collate_fn=h2o_collate_fn, pin_memory=True, parallelism_mode='mp')
+    testloader = torch.utils.data.DataLoader(datapipe, batch_size=args.batch_size, num_workers=8, shuffle=True)
     num_classes = 4
     graph_input='coords'
 else:
@@ -171,10 +173,10 @@ for i, ts_data in tqdm(enumerate(testloader)):
     predictions, img, palm, labels = prepare_data_for_evaluation(data_dict, outputs, img, keys, device, args.split)
 
     ### Visualization
-    if args.visualize:# and predictions['scores'][0] < 0.05:
+    if args.visualize: 
 
         name = path.split('/')[-1]
-        # print(name)
+
         if (num_classes == 2 and 1 in predictions['labels']) or (num_classes == 4 and set([1, 2, 3]).issubset(predictions['labels'])):
             visualize2d(img, predictions, labels, filename=f'./outputs/visual_results/{args.seq}/{name}', palm=palm, evaluate=evaluate)
         else:
